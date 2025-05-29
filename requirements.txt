@@ -1,0 +1,8 @@
+langchain-chroma>=0.1.2
+langgraph==0.3.31
+langchain-openai==0.3.14
+langchain-community==0.3.21
+#audio
+openai[voice_helpers]
+playsound
+pygobject
