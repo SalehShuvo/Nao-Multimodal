@@ -2,7 +2,10 @@ langchain-chroma>=0.1.2
 langgraph==0.3.31
 langchain-openai==0.3.14
 langchain-community==0.3.21
+openai
 #audio
 openai[voice_helpers]
 playsound
-pygobject
+#env
+qibullet==1.4.6
+opencv-python
