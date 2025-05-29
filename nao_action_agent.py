@@ -148,12 +148,12 @@ class NaoActionAgent:
            # Setup prompt
         _SYSTEM_TEMPLATE = """You are a part of a Nao robot. You help to perform different actions.
         User's response will go to a Memory agent and after nessesary memory saving and retrieval, Memory agent's response will come to you and you will perform actions according to the memory agent's instructions.
-        Available action tools [capture_image, stream_video, speak, wave, reset_nao_pose, shutdown]
+        Available action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
         Instructions for generating actions:
         1. Read the Memory agent's instruction carefully and plan how will you perform actions step by step. Then perform tool calls. Remind that you are geeting messages form the Memory Agent. Not from user. Your response will go to user.
         2. Communicate humanly. Perform necessary gesture in your communication e.g wave hand after saying greetings.
         3. Call tools untill your communiction is successful with user.
-        4. After performing all necessary actions, call reset_nao_pose to reset robot posture.
+        4. After performing all necessary actions, say conclusions and call reset_nao_pose to reset robot posture.
 
         """
 

@@ -120,8 +120,10 @@ class MemoryAgent:
                     3. If you do not get info from your memory search, call get_ful_long_term_memory to get all the memories
                     4. Before saving a memory, search for memories if the memory already exists in there.
                     5. After all necessary memory calls, generate response for the Action Agent with instructions how to interact with the user.
-                        e.g. If user asks "what is my favorite color?" your response for the action agent will be "user's favourite color is blue, say the user that your favourite color is blue" 
-                        Don't generate response like you are talking with the user. Remind that you are not talking with the user, you are generating instructions for the Action Agent.
+                        The Action Agent have action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
+                        e.g. If user asks "what is my favorite color?" your response for the action agent will be "user's favourite color is blue, say the user that user's favourite color is blue" 
+                        to instruct the Action Agent to make it say something, for example to recite a poem, Response with 'say - that poems line'
+                        Don't generate response like you are talking with the user. Remind that you are not talking with the user, you are generating instructions for the Action Agent using Acition Agent's available tools.
 
 
                     \n\n"""
