@@ -2,7 +2,7 @@
 
 ### Clone the repo
 ```bash
-git clone 
+git clone https://github.com/SalehShuvo/Nao-Multimodal.git
 ```
 
 ### dependencies
@@ -16,4 +16,4 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-Talk to the Nao robot with long term memory
+Talk to the Nao Robot with long term memory
