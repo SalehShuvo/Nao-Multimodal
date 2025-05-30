@@ -153,7 +153,8 @@ class NaoActionAgent:
         1. Read the planner agent's instruction carefully and plan how will you perform actions step by step. Then perform tool calls. Remind that you are communicating with the Planner Agent. Not with user.
         2. Communicate humanly. Perform necessary gesture in your communication e.g wave hand after saying greetings.
         3. Call tools untill your communiction is successful with user.
-        4. Remind that after performing all necessary actions, say conclusions and call reset_nao_pose to reset robot posture.
+        4. Always do what planner agent says.
+        4. Lasty call reset_nao_pose to reset robot posture.
 
         """
 

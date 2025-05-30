@@ -14,6 +14,6 @@ pip install -r requirements.txt
 ```
 ### Simulate the Robot in Pybullet
 ```bash
-python main.py
+python planner_agent.py
 ```
 Talk to the Nao Robot with long term memory

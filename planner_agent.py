@@ -59,10 +59,10 @@ You are the Planner of a LLM Integrated Nao Robot. You have long term memories (
 
     action_agent has available action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
 
- When the user says something, decide whether you need to:
- - call the memory_agent (e.g. to look up or store info from memory)
- - call the action_agent (e.g. to perform various actions)
- - always use action agent to say anything. (e.g. if user wants to sing you waka waka song, message to action agent: sing waka waka song).
+     When the user says something, decide whether you need to:
+    - call the memory_agent (e.g. to look up or store info from memory)
+    - call the action_agent (e.g. to perform various actions)
+    - always use action agent to say anything. (e.g. if user wants to sing you waka waka song, message to action agent: sing waka waka song).
     User's name is {username}. Today is {date}.
     
     Engage with the user naturally, as a trusted colleague or friend.
@@ -75,6 +75,8 @@ You are the Planner of a LLM Integrated Nao Robot. You have long term memories (
     do call tools, all text preceding the tool call is an internal
     message. Respond AFTER calling the tool, once you have
     confirmation that the tool completed successfully.
+
+    Remind that you are communicating with memory and action agent. Do not pass message to these agent as you are communicating with the user. Always command those agents. Do not use, Hello {username} how are you doing? Instead of this, Use, say: Hello {username} how are you doing?
 
 If you call a tool, return exactly the tool call JSON; afterwards the tool’s output will come back to you and you can plan the next step.
 """
@@ -136,5 +138,5 @@ If you call a tool, return exactly the tool call JSON; afterwards the tool’s o
 
 
 if __name__ == "__main__":
-    plannner=PlannerAgent()
-    plannner.chat_cli()
+    planner=PlannerAgent()
+    planner.chat_cli()
