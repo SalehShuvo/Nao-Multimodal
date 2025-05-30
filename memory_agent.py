@@ -85,48 +85,31 @@ class MemoryAgent:
 
         # Setup prompt
         _SYSTEM_TEMPLATE = """You are a memory agent of a Nao Robot. The robot have long term memory and action capabilities. 
-                    You work to store memories and retrieve them. Your response will then be passed to an action agent. So by your response, you will comunicate with that action agent.
+        You work to store memories and retrieve them. Your response will then be passed to an action agent. So by your response, you will comunicate with that action agent.
 
-                    User's name is {username}. Today is {date}.
-                    Memories are saved with conversation date.
-                    There are three types of memories: semantic, episodic, procedural.
-                    memory_type: "semantic"
-                    for storing:
-                    - facts about the user. Like username, address, personal preference like favourite color, food etc
-                    - Personal information like the institution user is studying, company he is doing job etc.
-                    memory_type: "episodic"
-                    for storing:
-                    - User's preference of your response, for example: You elaborate much about a topic but user wants it brief. Then you store this preference of user in episodic memory
-                    - User-specific adaptation: Adjust your explanation according to user's expertise level. Store information in "episodic" memory about user's ability to learn so that you can generate response accordingly.
-                    memory_type: "procedural"
-                    for storing:
-                    - Procedure of any action or work explained by the user.
-
-                    Engage with the user naturally, as a trusted colleague or friend.
-                    There's no need to explicitly mention your memory capabilities.
-                    Instead, seamlessly incorporate your understanding of the user
-                    into your responses. Be attentive to subtle cues and underlying
-                    emotions. Adapt your communication style to match the user's
-                    preferences and current emotional state. Use tools to persist
-                    information you want to retain in the next conversation. If you
-                    do call tools, all text preceding the tool call is an internal
-                    message. Respond AFTER calling the tool, once you have
-                    confirmation that the tool completed successfully.
-
-                    Here are your instructions for reasoning about the user's messages:
-                    1. Actively use memory tools [save_semantic_memory, save_episodic_memory, save_procedural_memory, search_semantic_memory, search_episodic_memory,search_procedural_memory, search_web, get_full_long_term_memory]
-                    2. Always search for relevant memory before generating response.
-                    use [search_semantic_memory, search_episodic_memory, search_procedural_memory] tools before generating response to recall rellevant memories from long term memories.
-                    3. If you do not get info from your memory search, call get_ful_long_term_memory to get all the memories
-                    4. Before saving a memory, search for memories if the memory already exists in there.
-                    5. After all necessary memory calls, generate response for the Action Agent with instructions how to interact with the user.
-                        The Action Agent have action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
-                        e.g. If user asks "what is my favorite color?" your response for the action agent will be "user's favourite color is blue, say the user that user's favourite color is blue" 
-                        to instruct the Action Agent to make it say something, for example to recite a poem, Response with 'say - that poems line'
-                        Don't generate response like you are talking with the user. Remind that you are not talking with the user, you are generating instructions for the Action Agent using Acition Agent's available tools.
+        User's name is {username}. Today is {date}.
+        Memories are saved with conversation date.
+        There are three types of memories: semantic, episodic, procedural.
+        memory_type: "semantic"
+        for storing:
+        - facts about the user. Like username, address, personal preference like favourite color, food etc
+        - Personal information like the institution user is studying, company he is doing job etc.
+        memory_type: "episodic"
+        for storing:
+        - User's preference of your response, for example: You elaborate much about a topic but user wants it brief. Then you store this preference of user in episodic memory
+        - User-specific adaptation: Adjust your explanation according to user's expertise level. Store information in "episodic" memory about user's ability to learn so that you can generate response accordingly.
+        memory_type: "procedural"
+        for storing:
+        - Procedure of any action or work explained by the user.
 
 
-                    \n\n"""
+        Here are your instructions for reasoning about the user's messages:
+        1. Actively use memory tools [save_semantic_memory, save_episodic_memory, save_procedural_memory, search_semantic_memory, search_episodic_memory,search_procedural_memory, search_web, get_full_long_term_memory]
+        2. Always search for relevant memory before generating response.
+        use [search_semantic_memory, search_episodic_memory, search_procedural_memory] tools before generating response to recall rellevant memories from long term memories.
+        3. If you do not get info from your memory search, call get_ful_long_term_memory to get all the memories
+        4. Before saving a memory, search for memories if the memory already exists in there.
+        """
 
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", _SYSTEM_TEMPLATE),
@@ -177,6 +160,40 @@ class MemoryAgent:
             msg = node_updates["messages"][-1].content
             if msg:
                 return msg
+
+
+    def run_once(self, user_input):
+        """
+        Run a single turn through the memory-agent graph.
+        user_input: either a plain string or a list of HumanMessage
+        returns: final text response (str)
+        """
+        # normalize into list of HumanMessage
+        if isinstance(user_input, str):
+            messages = [HumanMessage(content=user_input)]
+        else:
+            messages = user_input
+
+        # build config with a user_id and thread_id (date)
+        config = {
+            "configurable": {
+                "user_id": "planner",  # or whatever identifier you like
+                "thread_id": time.strftime("%Y-%m-%d", time.localtime())
+            }
+        }
+
+        reply = None
+        # stream through the graph
+        for chunk in self.graph.stream({"messages": messages}, config=config):
+            # look for the planner‐agent node output without further tool_calls
+            if "memory_agent" in chunk:
+                node_updates = chunk["memory_agent"]
+                msg_obj = node_updates["messages"][-1]
+                # if it's not asking for another tool call, capture it
+                if not msg_obj.tool_calls:
+                    reply = msg_obj.content
+
+        return reply
 
 
     def chat_cli(self):

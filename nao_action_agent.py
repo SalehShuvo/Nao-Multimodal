@@ -146,14 +146,14 @@ class NaoActionAgent:
         self.model_with_tools = self.model.bind_tools(self.tools)
 
            # Setup prompt
-        _SYSTEM_TEMPLATE = """You are a part of a Nao robot. You help to perform different actions.
-        User's response will go to a Memory agent and after nessesary memory saving and retrieval, Memory agent's response will come to you and you will perform actions according to the memory agent's instructions.
+        _SYSTEM_TEMPLATE = """You are action_agent of a Nao robot. You help to perform different actions.
+        User's response will go to a planner agent and after nessesary memory saving and retrieval, Memory agent's you will perform actions according to the memory agent's instructions.
         Available action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
         Instructions for generating actions:
-        1. Read the Memory agent's instruction carefully and plan how will you perform actions step by step. Then perform tool calls. Remind that you are geeting messages form the Memory Agent. Not from user. Your response will go to user.
+        1. Read the planner agent's instruction carefully and plan how will you perform actions step by step. Then perform tool calls. Remind that you are communicating with the Planner Agent. Not with user.
         2. Communicate humanly. Perform necessary gesture in your communication e.g wave hand after saying greetings.
         3. Call tools untill your communiction is successful with user.
-        4. After performing all necessary actions, say conclusions and call reset_nao_pose to reset robot posture.
+        4. Remind that after performing all necessary actions, say conclusions and call reset_nao_pose to reset robot posture.
 
         """
 
@@ -171,8 +171,6 @@ class NaoActionAgent:
             date = config["configurable"].get("thread_id")
             bound = self.prompt | self.model_with_tools
             prediction = bound.invoke({
-                "username": username,
-                "date": date,
                 "messages": state["messages"],
             })
             return {"messages": [prediction]}
@@ -200,6 +198,39 @@ class NaoActionAgent:
             print()
     
 
+    def run_once(self, user_input):
+        """
+        Run a single turn through the action-agent graph.
+        user_input: either a plain string or a list of HumanMessage
+        returns: final text response (str)
+        """
+        # Normalize input into a list of HumanMessage
+        if isinstance(user_input, str):
+            messages = [HumanMessage(content=user_input)]
+        else:
+            messages = user_input
+
+        # Build config with a user_id and thread_id (date)
+        config = {
+            "configurable": {
+                "user_id": "planner",  # or any identifier you like
+                "thread_id": time.strftime("%Y-%m-%d", time.localtime())
+            }
+        }
+
+        reply = None
+        # Stream through the graph
+        for chunk in self.graph.stream({"messages": messages}, config=config):
+            # Look for the action_agent node output without further tool_calls
+            if "action_agent" in chunk:
+                node_updates = chunk["action_agent"]
+                msg_obj = node_updates["messages"][-1]
+                # If it's not asking for another tool call, capture it
+                if not msg_obj.tool_calls:
+                    final_reply = msg_obj.content
+
+        return reply
+
     def chat_cli(self):
         username = input("Enter your username: ").strip()
         date = time.strftime("%Y-%m-%d", time.localtime())
@@ -219,4 +250,5 @@ class NaoActionAgent:
 if __name__ == "__main__":
 
     agent = NaoActionAgent()
-    agent.chat_cli()
+    # agent.chat_cli()
+    agent.run_once("Hi")
