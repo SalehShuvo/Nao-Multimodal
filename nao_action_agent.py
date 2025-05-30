@@ -228,8 +228,8 @@ class NaoActionAgent:
                 msg_obj = node_updates["messages"][-1]
                 # If it's not asking for another tool call, capture it
                 if not msg_obj.tool_calls:
-                    final_reply = msg_obj.content
-
+                    reply = msg_obj.content
+        print(reply)
         return reply
 
     def chat_cli(self):
