@@ -11,7 +11,6 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import Tool, StructuredTool
 from langchain_openai import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain_chroma import Chroma
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, END, MessagesState, StateGraph
@@ -40,8 +39,13 @@ class NaoActionAgent:
             y: float   = Field(..., description="Lateral distance (m)")
             theta: float = Field(..., description="Yaw rotation (rad)")
         
-        # Wrap nao's action methods as tools
-        self.tools = [
+        # Wrap nao's action methods as tool
+        self.tools = [ 
+            Tool.from_function(
+                TavilySearchResults(max_results=2),
+                name="search_web",
+                description="Searches web for information",
+            ),
             Tool.from_function(
                 self.nao.capture_image,
                 name="capture_image",
@@ -148,7 +152,7 @@ class NaoActionAgent:
            # Setup prompt
         _SYSTEM_TEMPLATE = """You are action_agent of a Nao robot. You help to perform different actions.
         User's response will go to a planner agent and after nessesary memory saving and retrieval, Memory agent's you will perform actions according to the memory agent's instructions.
-        Available action tools [capture_image, stream_video, speak, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
+        Available action tools [capture_image, stream_video, speak, search_web, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
         Instructions for generating actions:
         1. Read the planner agent's instruction carefully and plan how will you perform actions step by step. Then perform tool calls. Remind that you are communicating with the Planner Agent. Not with user.
         2. Communicate humanly. Perform necessary gesture in your communication e.g wave hand after saying greetings.

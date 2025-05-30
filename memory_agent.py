@@ -1,7 +1,6 @@
 import os
 import platform
 import time
-import uuid
 from dotenv import load_dotenv, find_dotenv
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,8 +8,6 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain_chroma import Chroma
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, END, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
@@ -30,7 +27,6 @@ class MemoryAgent:
         db_dir: str = "./memory_db",
         model_name: str = "gpt-4o",
         embedding_model: str = "text-embedding-3-large",
-        max_search_results: int = 1,
     ):
         # Initialize LLM and embeddings
         self.model = ChatOpenAI(model_name=model_name, api_key=OPENAI_API_KEY)
@@ -76,7 +72,6 @@ class MemoryAgent:
                 name="get_full_long_term_memory",
                 description="List all stored memories",
             ),
-            TavilySearchResults(max_results=max_search_results),
         ]
 
         # Bind tools to model
