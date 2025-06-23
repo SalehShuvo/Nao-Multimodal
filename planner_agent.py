@@ -23,7 +23,7 @@ class PlannerAgent:
         
         self.memory_agent = __import__('memory_agent', fromlist=['MemoryAgent']).MemoryAgent()
         self.action_agent = __import__('nao_action_agent', fromlist=['NaoActionAgent']).NaoActionAgent()
-
+        self.perception_agent = __import__('perception_agent', fromlist=['PerceptionAgent']).PerceptionAgent()
 
         # Wrap the two agents’ top‐level run_once methods as tools:
         self.tools = [
@@ -37,11 +37,17 @@ class PlannerAgent:
                 name="action_agent",
                 description="Use this to perform physical or vocal actions"
             ),
+            Tool.from_function(
+                self.perception_agent.run_once,
+                name="perception_agent",
+                description="Use this to get visual perception of user"
+            ),
         ]
 
         # Build a simple “planner” prompt
         system_prompt = """
-You are the Planner of a LLM Integrated Nao Robot. You have long term memories (semantic, episodic, procedurals) and physical action capabilities.
+    You are the Planner of a LLM Integrated Nao Robot. The Robot have long term memories (semantic, episodic, procedurals) and physical action capabilities.
+    The robot can also find out user's gender and emotion.
 
     Memories are saved with conversation date.
     There are three types of memories: semantic, episodic, procedural.
@@ -57,11 +63,14 @@ You are the Planner of a LLM Integrated Nao Robot. You have long term memories (
     for storing:
     - Procedure of any action or work explained by the user.
 
-    action_agent has available action tools [capture_image, stream_video, speak, search_web, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
+    action_agent has available action tools [speak, search_web, wave, stand, sit, crouch, rest, move, nod_head, turn_head, gaze_head, raise_arms, walk, handshake, come_back_home, reset_nao_pose, shutdown]
+    
+    perception_agent has tools [capture_and_save_image, analyze_face] it can capture image and analyze the image to find out user's gender, age and emotion
 
      When the user says something, decide whether you need to:
     - call the memory_agent (e.g. to look up or store info from memory)
     - call the action_agent (e.g. to perform various actions)
+    - call the perception_agent (e.g. get user's emotion)
     - always use action agent to say anything. (e.g. if user wants to sing you waka waka song, message to action agent: sing waka waka song).
     User's name is {username}. Today is {date}.
     

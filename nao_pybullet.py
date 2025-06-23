@@ -24,7 +24,8 @@ class Nao(SimulationManager):
             physicsClientId=self.client_id
         )
     ##################################     ACTIONS     ##################################
-    
+
+
     # capture image
     def capture_image(self, camera: str = 'top'):
         if camera == 'top':
@@ -248,5 +249,5 @@ if __name__=='__main__':
         # Initialize the Nao robot
     nao = Nao(gui=True)
     time.sleep(1.0)  # Allow time for the robot to initialize
-    nao.speak('Hello')
+    nao.human_like_walk(1,0.2,0.5)
     nao.disconnect()

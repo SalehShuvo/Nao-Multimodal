@@ -2,7 +2,7 @@ langchain-chroma>=0.1.2
 langgraph==0.3.31
 langchain-openai==0.3.14
 langchain-community==0.3.21
-openai
+openai==1.82.0
 dotenv
 #audio
 openai[voice_helpers]
@@ -10,3 +10,9 @@ playsound
 #env
 qibullet==1.4.6
 opencv-python
+#face analysis
+deepface
+numpy
+tf-keras
+pyyaml
+typeguard
