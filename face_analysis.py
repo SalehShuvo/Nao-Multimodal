@@ -8,15 +8,35 @@ def analyze_face():
     Analyzes an input image for face recognition and facial attributes.
     
     Returns:
-        dict: Dictionary containing gender and emotion. Empty strings for undetected attributes.
+        str: Emotion of user
     """
-    input_image_path = 'images/user.jpg'
-    reference_folder='images/references'
+    
+    # Ensure save directory exists
+    os.makedirs('./images', exist_ok=True)
 
-    result = {
-        'gender': '',
-        'emotion': ''
-    }
+    # Open camera
+    cam = cv2.VideoCapture(0)
+    if not cam.isOpened():
+        raise RuntimeError(f"Cannot open camera #{0}")
+
+    # Capture frame
+    ret, frame = cam.read()
+    cam.release()
+    if not ret or frame is None:
+        raise RuntimeError("Failed to capture image from camera")
+
+  
+    full_path = os.path.join('./images', "user.jpg")
+
+    # Write to disk
+    success = cv2.imwrite(full_path, frame)
+    if not success:
+        raise RuntimeError(f"Failed to write image to {full_path}")
+
+
+    # analyze_face
+    input_image_path = full_path
+    result = ''
     
     try:
         # Step 1: Read the input image
@@ -28,7 +48,7 @@ def analyze_face():
         # Step 2: Face detection and attribute analysis
         analysis = DeepFace.analyze(
             img_path=input_image_path,
-            actions=['gender', 'emotion'],
+            actions=['emotion'],
             enforce_detection=False,
             detector_backend='opencv',
             silent=True
@@ -43,39 +63,14 @@ def analyze_face():
         if isinstance(analysis, list):
             analysis = analysis[0]  # Take the first detected face
 
-        # result['age'] = str(analysis.get('age', '')) if 'age' in analysis else ''
-        result['gender'] = analysis.get('dominant_gender', '') if 'dominant_gender' in analysis else ''
-        result['emotion'] = analysis.get('dominant_emotion', '') if 'dominant_emotion' in analysis else ''
+        result = analysis.get('dominant_emotion', '') if 'dominant_emotion' in analysis else ''
 
-        # Step 3: Face recognition against reference images
-        if os.path.exists(reference_folder):
-            for ref_image in os.listdir(reference_folder):
-                if ref_image.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    ref_path = os.path.join(reference_folder, ref_image)
-                    try:
-                        # Verify if the input image matches the reference image
-                        verification = DeepFace.verify(
-                            img1_path=input_image_path,
-                            img2_path=ref_path,
-                            model_name='OpenFace',
-                            detector_backend='opencv',
-                            enforce_detection=False,
-                            silent=True
-                        )
-                        if verification['verified']:
-                            # Extract name from filename (remove extension)
-                            result['name'] = os.path.splitext(ref_image)[0]
-                            break
-                    except Exception as e:
-                        print(f"Error comparing with {ref_image}: {str(e)}")
-        else:
-            print(f"Reference folder {reference_folder} does not exist.")
 
     except Exception as e:
         print(f"Error processing image: {str(e)}")
         return result
 
-    return result
+    return f"emotion: {result}"
 
 if __name__ == "__main__":
     # # Path to the input image
@@ -85,7 +80,4 @@ if __name__ == "__main__":
     # Analyze the image
     result = analyze_face()
     
-    # Print the results
-    print("Analysis Result:")
-    print(f"Gender: {result['gender']}")
-    print(f"Emotion: {result['emotion']}")
+    print(result)
